@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    // ✅ Ensure the controller extends the base Controller class
+    public function __construct()
+    {
+        $this->middleware('auth'); // Ensures only authenticated users can access this controller
+    }
+
     public function index(Request $request)
     {
         $users = User::query();
 
-        // Filtering users by name or email
         if ($request->has('search')) {
             $search = $request->input('search');
             $users->where('name', 'like', "%$search%")
@@ -67,4 +72,11 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
+
+    public function show(User $user)
+{
+    return view('users.show', compact('user'));
 }
+
+}
+
