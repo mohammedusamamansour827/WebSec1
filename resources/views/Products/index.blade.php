@@ -2,37 +2,25 @@
 
 @section('content')
 <div class="container">
-    <h2>Products</h2>
-    <a href="{{ route('products.create') }}" class="btn btn-primary">Add Product</a>
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($products as $product)
-                <tr>
-                    <td>{{ $product->name }}</td>
-                    <td>{{ $product->description }}</td>
-                    <td>${{ $product->price }}</td>
-                    <td>{{ $product->quantity }}</td>
-                    <td>
-                        <a href="{{ route('products.show', $product->id) }}" class="btn btn-info btn-sm">View</a>
-                        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <h1>Products</h1>
+
+    @if(auth()->user() && auth()->user()->admin)
+        <a href="{{ route('products.create') }}" class="btn btn-primary">Add Product</a>
+    @endif
+
+    <ul class="list-group mt-3">
+        @foreach($products as $product)
+            <li class="list-group-item">
+                <a href="{{ route('products.show', $product) }}">{{ $product->name }}</a>
+                @if(auth()->user() && auth()->user()->admin)
+                    <a href="{{ route('products.edit', $product) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                @endif
+            </li>
+        @endforeach
+    </ul>
 </div>
 @endsection

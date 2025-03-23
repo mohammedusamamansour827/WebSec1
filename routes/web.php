@@ -4,36 +4,25 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QuestionController;
 use Illuminate\Http\Request;
-use App\Models\Question; // ✅ Import Question model
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Web\UsersController;
+use App\Models\Question;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TaskController;
+use Illuminate\Support\Facades\Password;
 
-
-
-
+// 🏠 Default Home Page
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Pages Routes
-Route::get('/multable', function () {
-    return view('multable');
-});
+// 📌 Simple Views
+Route::view('/multable', 'multable');
+Route::view('/even', 'even');
+Route::view('/prime', 'prime');
 
-Route::get('/even', function () {
-    return view('even');
-});
-
-Route::get('/prime', function () {
-    return view('prime');
-});
-
-// Supermarket Bill Route
+// 🛒 Supermarket Bill Route
 Route::get('/bill', function () {
     $bill = (object)[
         "supermarket" => "Carrefour",
@@ -48,7 +37,7 @@ Route::get('/bill', function () {
     return view('bill', compact('bill'));
 });
 
-// GPA Calculator Route
+// 🎓 GPA Calculator
 Route::get('/calculator', function () {
     $courses = [
         ["code" => "CS101", "title" => "Intro to Programming", "credits" => 3],
@@ -59,7 +48,7 @@ Route::get('/calculator', function () {
     return view('calculator', compact('courses'));
 });
 
-// Student Transcript Route
+// 📜 Student Transcript
 Route::get('/transcript', function () {
     $student = (object)[
         "name" => "Mohammed Usama",
@@ -75,19 +64,35 @@ Route::get('/transcript', function () {
     return view('transcript', compact('student'));
 });
 
-// Users CRUD Routes
+// 🔑 Authentication Routes
+Route::get('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'doLogin']);
+Route::post('/logout', [AuthController::class, 'doLogout'])->name('logout');
+Route::get('/register', [AuthController::class, 'login'])->name('register'); // Update if registration is enabled
+
+// 🛠 Profile Routes (Protected)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::post('/profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+});
+
+// 🏛 Admin Routes (Protected)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::resource('/admin/users', UserController::class);
+});
+
+// 👥 Users Management
 Route::resource('users', UserController::class);
 
-// Questions CRUD Routes
+// 📚 Questions CRUD
 Route::resource('questions', QuestionController::class);
 
-// Start Exam Page
+// 📝 Exam Routes
 Route::get('/exam/start', function () {
     $questions = Question::all();
     return view('exam.start', compact('questions'));
 });
-
-// Submit Exam
 Route::post('/exam/submit', function (Request $request) {
     $score = 0;
     $questions = Question::all();
@@ -99,43 +104,82 @@ Route::post('/exam/submit', function (Request $request) {
     return view('exam.result', compact('score'));
 });
 
-
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
-
-Route::post('/register', [UsersController::class, 'doRegister'])->name('do_register');
-
-
-
-Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-Route::post('/profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
-
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/admin/users/{id}', [UserController::class, 'show'])->name('admin.users.show');
-    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::post('/admin/users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
-    Route::post('/admin/users/{id}/change-password', [UserController::class, 'changePassword'])->name('admin.users.change-password');
-    Route::get('/profile', [UserController::class, 'profile'])->name('profile');
-});
-Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-Route::get('/admin', [AdminController::class, 'index'])->name('admin');
-
+// 🏪 Products Management
 Route::resource('products', ProductController::class);
-// Route::get('/products', [ProductController::class, 'list'])->name('products.list');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+});
 
-
-
+// ✅ Tasks Management (Only Authenticated Users)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
-    Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
-    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
-    Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
-    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
-    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::resource('tasks', TaskController::class);
 });
+
+// 🔑 Dashboard Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard'); // Normal user dashboard
+    })->name('dashboard');
+});
+
+// 🔑 Admin Dashboard
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard'); // Admin dashboard
+    })->name('admin.dashboard');
+});
+
+
+// Password Reset Routes
+Route::get('forgot-password', function () {
+    return view('auth.forgot-password'); // Make sure this view exists
+})->middleware('guest')->name('password.request');
+
+Route::post('forgot-password', function (Request $request) {
+    $request->validate(['email' => 'required|email']);
+
+    $status = Password::sendResetLink($request->only('email'));
+
+    return $status === Password::RESET_LINK_SENT
+        ? back()->with(['success' => __($status)])
+        : back()->withErrors(['email' => __($status)]);
+})->middleware('guest')->name('password.email');
+
+Route::get('reset-password/{token}', function ($token) {
+    return view('auth.reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+
+Route::post('reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:6|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => bcrypt($password),
+            ])->save();
+        }
+    );
+
+    return $status === Password::PASSWORD_RESET
+        ? redirect()->route('login')->with('success', __($status))
+        : back()->withErrors(['email' => __($status)]);
+})->middleware('guest')->name('password.update');
+
+
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard'); // Ensure this file exists
+})->name('admin.dashboard')->middleware(['auth', 'admin']);
+
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard')->middleware('auth');

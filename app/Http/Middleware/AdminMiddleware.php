@@ -11,14 +11,20 @@ class AdminMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function handle($request, Closure $next)
-{
-    if (auth()->user
-    () && auth()->user()->admin) {
+    public function handle(Request $request, Closure $next): Response
+    {
+        // ✅ Ensure user is authenticated and an admin
+        if (!auth()->check() || !auth()->user()->admin) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized access! Admins only.'], 403);
+            }
+            return redirect('/')->with('error', 'Unauthorized access! Admins only.');
+        }
+
         return $next($request);
     }
-    return redirect('/')->with('error', 'Unauthorized Access!');
-}
 }

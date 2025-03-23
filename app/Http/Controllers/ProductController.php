@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ProductService;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    protected $productService;
-
-    public function __construct(ProductService $productService)
-    {
-        $this->productService = $productService;
-    }
-
     public function index()
     {
-        $products = $this->productService->getAllProducts();
+        $products = Product::all();
         return view('products.index', compact('products'));
+    }
+
+    public function show(Product $product)
+    {
+        return view('products.show', compact('product'));
     }
 
     public function create()
@@ -27,48 +25,38 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
+        $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'description' => 'nullable',
         ]);
-        dd($request->all()); // Debugging: Show submitted data
 
-        $this->productService->createProduct($data);
-        return redirect()->route('products.index')->with('success', 'Product added successfully!');
+        Product::create($request->all());
 
-
+        return redirect()->route('products.index')->with('success', 'Product added successfully.');
     }
 
-    public function show($id)
+    public function edit(Product $product)
     {
-        $product = $this->productService->getProductById($id);
-        return view('products.show', compact('product'));
-    }
-
-    public function edit($id)
-    {
-        $product = $this->productService->getProductById($id);
         return view('products.edit', compact('product'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
+        $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'description' => 'nullable',
         ]);
 
-        $this->productService->updateProduct($id, $data);
-        return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+        $product->update($request->all());
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        $this->productService->deleteProduct($id);
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
+        $product->delete();
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
 }
