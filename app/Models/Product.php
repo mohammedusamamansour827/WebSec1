@@ -13,4 +13,15 @@ class Product extends Model  {
         'description',
         'photo'
     ];
+
+    public function purchases()
+{
+    return $this->hasMany(\App\Models\Purchase::class);
+}
+
+public function buyers()
+{
+    return $this->belongsToMany(User::class)->withTimestamps();
+}
+
 }

@@ -13,6 +13,10 @@ use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Password;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\loginController;
+
 
 // 🏠 Default Home Page
 Route::get('/', function () {
@@ -230,3 +234,65 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
     Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');
 
+
+    Route::get('/products/create', [ProductController::class, 'create'])->middleware('role:employee,admin');
+
+
+    Route::middleware(['auth', 'role:employee'])->group(function () {
+        Route::resource('products', ProductController::class);
+    });
+
+
+    Route::post('/products/{product}/purchase', [ProductController::class, 'purchase'])
+    ->middleware(['auth'])
+    ->name('products.purchase');
+
+    Route::middleware(['auth'])->get('/my-purchases', [App\Http\Controllers\ProductController::class, 'myPurchases'])->name('products.myPurchases');
+
+    Route::post('/products/{product}/buy', [ProductController::class, 'buy'])->name('products.buy');
+
+
+// Profile
+Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+
+// Purchases (Customer)
+Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
+
+// Products (Employee/Admin)
+Route::resource('products', ProductController::class);
+
+// Employee viewing their customers
+Route::get('/employee/customers', [EmployeeController::class, 'customers'])->name('employee.customers');
+
+// User management (Admin)
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+
+// Logout (default Laravel)
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+Route::middleware(['auth', 'role:employee'])->get('/employees/customers', [EmployeeController::class, 'listCustomers'])->name('employees.customers');
+
+
+Route::middleware(['auth', 'role:employee'])->group(function () {
+    Route::get('/employees/customers', [EmployeeController::class, 'listCustomers'])->name('employees.customers');
+    Route::get('/employees/customer/{customer}/credit', [EmployeeController::class, 'addCreditForm'])->name('employees.addCreditForm');
+    Route::post('/employees/customer/{customer}/credit', [EmployeeController::class, 'addCredit'])->name('employees.addCredit');
+});
+
+
+// routes/web.php
+Route::middleware(['auth', 'role:employee'])->group(function () {
+    Route::resource('products', ProductController::class)->except(['show']);
+});
+
+Route::middleware(['auth', 'role:employee'])->get('/customers', [EmployeeController::class, 'listCustomers'])->name('employees.customers');
+
+Route::middleware(['auth', 'role:employee'])->group(function () {
+    Route::get('/customers/{customer}/credit', [EmployeeController::class, 'addCreditForm'])->name('employees.credit.form');
+    Route::post('/customers/{customer}/credit', [EmployeeController::class, 'addCredit'])->name('employees.credit.add');
+});
+
+
+    // Route::get('/my-purchases', [UserController::class, 'myPurchases'])->name('purchases.index');

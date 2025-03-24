@@ -2,23 +2,29 @@
 
 @section('content')
 <div class="container">
-    <h1>Edit Product</h1>
+    <h2>Edit Product</h2>
 
-    <form action="{{ route('products.update', $product) }}" method="POST">
-        @csrf @method('PUT')
+    <form method="POST" action="{{ route('products.update', $product) }}">
+        @csrf
+        @method('PUT')
+
         <div class="mb-3">
-            <label>Name:</label>
+            <label>Name</label>
             <input type="text" name="name" class="form-control" value="{{ $product->name }}" required>
         </div>
+
         <div class="mb-3">
-            <label>Price:</label>
-            <input type="number" name="price" class="form-control" value="{{ $product->price }}" required>
+            <label>Price ($)</label>
+            <input type="number" name="price" step="0.01" class="form-control" value="{{ $product->price }}" required>
         </div>
+
         <div class="mb-3">
-            <label>Description:</label>
-            <textarea name="description" class="form-control">{{ $product->description }}</textarea>
+            <label>Stock</label>
+            <input type="number" name="stock" class="form-control" value="{{ $product->stock }}" required>
         </div>
-        <button type="submit" class="btn btn-success">Update</button>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ route('products.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class ProfileController extends Controller
 {
     public function show()
     {
-        return view('profile', ['user' => Auth::user()]);
+        $user = Auth::user();
+        return view('profile.show', compact('user'));
     }
 
     public function updatePassword(Request $request)
@@ -28,9 +28,11 @@ class ProfileController extends Controller
         }
 
         $user->password = Hash::make($request->new_password);
-        $user->save();
+/** @var \App\Models\User $user */
+$user = Auth::user();
+$user->password = Hash::make($request->new_password);
+$user->save();
 
         return back()->with('success', 'Password updated successfully');
     }
 }
-

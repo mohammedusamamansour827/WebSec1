@@ -29,4 +29,14 @@ class RegisterController extends Controller
 
         return redirect('/')->with('success', 'Registration successful! You can now log in.');
     }
+
+    protected function create(array $data)
+{
+    return User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'role' => 'customer', // automatically assign 'customer'
+    ]);
+}
 }
