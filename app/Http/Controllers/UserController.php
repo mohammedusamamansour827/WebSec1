@@ -17,22 +17,24 @@ class UserController extends Controller
 
     // ✅ Admin-Only: List Users
     public function index(Request $request)
-    {
-        // Only admins can view users
-        if (!Auth::user()->admin) {
-            abort(403, 'Unauthorized access.');
-        }
-
-        $users = User::query();
-
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $users->where('name', 'like', "%$search%")
-                  ->orWhere('email', 'like', "%$search%");
-        }
-
-        return view('users.index', ['users' => $users->paginate(10)]);
+{
+    if (!Auth::user()->admin) {
+        abort(403, 'Unauthorized access.');
     }
+
+    $search = $request->input('search');
+
+    $users = User::query()
+        ->when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+        })
+        ->paginate(10)
+        ->appends(['search' => $search]); // preserve search in pagination links
+
+    return view('users.index', compact('users', 'search'));
+}
+
 
     // ✅ Admin-Only: Create User Form
     public function create()

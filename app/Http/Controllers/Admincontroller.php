@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Task; // optional
+
 
 class AdminController extends Controller
 {
@@ -21,9 +23,11 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        return view('admin.users.index', compact('users'));
-
+        return view('admin.dashboard', [
+            'userCount' => User::count(),
+            'taskCount' => Task::count(),
+            'latestUsers' => User::latest()->take(5)->get()
+        ]);
     }
 
     /**

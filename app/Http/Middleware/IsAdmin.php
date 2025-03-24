@@ -14,23 +14,32 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // ✅ Check if the user is authenticated and an admin
-        if (Auth::check() && Auth::user()->admin) {
-            return $next($request);
+        // ✅ Check if the user is authenticated
+        if (!Auth::check()) {
+            return $this->denyAccess($request, 'You must be logged in.');
         }
 
-        // ✅ Log unauthorized access attempts (optional)
-        logger()->warning('Unauthorized access attempt by user: ' . (Auth::user()->email ?? 'Guest'));
+        // ✅ Check if the authenticated user is an admin
+        if (!Auth::user()->isAdmin()) {
+            logger()->warning('Unauthorized access attempt by user: ' . Auth::user()->email);
+            return $this->denyAccess($request, 'Access denied. Admins only.');
+        }
 
-        // ✅ Handle API requests separately
+        return $next($request);
+    }
+
+    /**
+     * Handle unauthorized access response.
+     */
+    protected function denyAccess(Request $request, string $message): Response
+    {
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Access denied. Admins only.',
+                'message' => $message,
                 'status' => 403
             ], 403);
         }
 
-        // ✅ Redirect with an error message for web requests
-        return redirect()->route('dashboard')->with('error', 'Access denied. Admins only.');
+        return redirect()->route('dashboard')->with('error', $message);
     }
 }

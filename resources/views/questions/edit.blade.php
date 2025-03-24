@@ -1,39 +1,47 @@
-@extends('layouts.app')
-
-@section('title', 'Edit Question')
-
+@extends('layouts.master')
+@section('title', 'Prime Numbers')
 @section('content')
-<div class="container mt-4">
-    <h2>Edit Question</h2>
-    <form action="{{ route('questions.update', $question->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-        <div class="mb-3">
-            <label class="form-label">Question</label>
-            <input type="text" class="form-control" name="question" value="{{ $question->question }}" required>
+
+<form action="{{route('products_save', $product->id)}}" method="post">
+    {{ csrf_field() }}
+    {{ csrf_field() }}
+    @foreach($errors->all() as $error)
+    <div class="alert alert-danger">
+    <strong>Error!</strong> {{$error}}
+    </div>
+    @endforeach
+    <div class="row mb-2">
+        <div class="col-6">
+            <label for="code" class="form-label">Code:</label>
+            <input type="text" class="form-control" placeholder="Code" name="code" required value="{{$product->code}}">
         </div>
-        <div class="mb-3">
-            <label class="form-label">Option A</label>
-            <input type="text" class="form-control" name="option_a" value="{{ $question->option_a }}" required>
+        <div class="col-6">
+            <label for="model" class="form-label">Model:</label>
+            <input type="text" class="form-control" placeholder="Model" name="model" required value="{{$product->model}}">
         </div>
-        <div class="mb-3">
-            <label class="form-label">Option B</label>
-            <input type="text" class="form-control" name="option_b" value="{{ $question->option_b }}" required>
+    </div>
+    <div class="row mb-2">
+        <div class="col">
+            <label for="name" class="form-label">Name:</label>
+            <input type="text" class="form-control" placeholder="Name" name="name" required value="{{$product->name}}">
         </div>
-        <div class="mb-3">
-            <label class="form-label">Option C</label>
-            <input type="text" class="form-control" name="option_c" value="{{ $question->option_c }}" required>
+    </div>
+    <div class="row mb-2">
+        <div class="col-6">
+            <label for="model" class="form-label">Price:</label>
+            <input type="numeric" class="form-control" placeholder="Price" name="price" required value="{{$product->price}}">
         </div>
-        <div class="mb-3">
-            <label class="form-label">Option D</label>
-            <input type="text" class="form-control" name="option_d" value="{{ $question->option_d }}" required>
+        <div class="col-6">
+            <label for="model" class="form-label">Photo:</label>
+            <input type="text" class="form-control" placeholder="Photo" name="photo" required value="{{$product->photo}}">
         </div>
-        <div class="mb-3">
-            <label class="form-label">Correct Answer (A/B/C/D)</label>
-            <input type="text" class="form-control" name="correct_option" value="{{ $question->correct_option }}" required>
+    </div>
+    <div class="row mb-2">
+        <div class="col">
+            <label for="name" class="form-label">Description:</label>
+            <textarea type="text" class="form-control" placeholder="Description" name="description" required>{{$product->description}}</textarea>
         </div>
-        <button type="submit" class="btn btn-success">Update Question</button>
-        <a href="{{ route('questions.index') }}" class="btn btn-secondary">Back</a>
-    </form>
-</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 @endsection

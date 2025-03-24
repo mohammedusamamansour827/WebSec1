@@ -11,6 +11,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Password;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\QuizController;
 
 // 🏠 Default Home Page
 Route::get('/', function () {
@@ -183,3 +185,48 @@ Route::get('/admin/dashboard', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard')->middleware('auth');
+
+
+Route::middleware(['auth', 'can:manage-users'])->group(function () {
+    Route::get('/admin/dashboard', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
+});
+
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard')->middleware('can:manage-users');
+
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+    ->middleware('can:manage-users')
+    ->name('admin.dashboard');
+
+
+    // Route::middleware(['auth', 'can:manage-users'])->group(function () {
+    //     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    // });
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
+
+        // Instructor Routes
+        Route::middleware('can:isInstructor')->group(function () {
+            Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
+            Route::post('/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
+        });
+
+        // Student Answer Submission
+        Route::post('/quizzes/{quiz}/submit', [QuizController::class, 'submitAnswer'])->name('quizzes.submit');
+    });
+
+    Route::middleware(['auth'])->group(function () {
+        Route::resource('quizzes', QuizController::class);
+        Route::get('submissions', [QuizController::class, 'mySubmissions'])->name('submissions.index');
+        Route::get('profile/{user}', [UserController::class, 'show'])->name('profile.show');
+    });
+
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
+    });
+
+
+    Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+    Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');
+
