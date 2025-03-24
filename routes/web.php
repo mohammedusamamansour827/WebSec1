@@ -230,3 +230,4 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
     Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
     Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');
 
+
